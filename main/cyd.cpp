@@ -58,7 +58,8 @@ void Cyd::begin() {
     command(0x01);
     vTaskDelay(pdMS_TO_TICKS(150));
     const uint8_t format = 0x55;
-    const uint8_t rotation = 0x28;
+    // Landscape with the panel row direction reversed to correct horizontal mirroring.
+    const uint8_t rotation = 0xa8;
     command(0x3a, &format, 1);
     command(0x36, &rotation, 1);
     command(0x11);

@@ -171,7 +171,7 @@ void calibrate() {
         if (std::fabs(result.ax*x[3] + result.bx*y[3] + result.cx - 160) > 15 ||
             std::fabs(result.ay*x[3] + result.by*y[3] + result.cy - 120) > 15) continue;
         calibration = result;
-        save("touch", &calibration, sizeof(calibration));
+        save("touch-v2", &calibration, sizeof(calibration));
         return;
     }
 }
@@ -364,7 +364,7 @@ extern "C" void app_main() {
     if (configured) load("fingers", &enrolled, sizeof(enrolled));
     fingerprint.begin();
     screen.begin();
-    if (!load("touch", &calibration, sizeof(calibration))) calibrate();
+    if (!load("touch-v2", &calibration, sizeof(calibration))) calibrate();
     show(configured ? View::Access : View::First);
 
     int64_t nextScan = 0;
