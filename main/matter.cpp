@@ -7,6 +7,7 @@
 #include <crypto/CHIPCryptoPAL.h>
 #include <platform/CommissionableDataProvider.h>
 #include <setup_payload/SetupPayload.h>
+#include <setup_payload/ManualSetupPayloadGenerator.h>
 
 bool setLocker(bool unlock);
 bool lockerUnlocked();
@@ -36,6 +37,16 @@ public:
         return Crypto::DRBG_get_bytes(salt, sizeof(salt));
     }
 
+    void printCode() const {
+        SetupPayload payload;
+        payload.discriminator.SetLongValue(discriminator);
+        payload.setUpPINCode = passcode;
+        char code[22]{};
+        MutableCharSpan output(code);
+        if (ManualSetupPayloadGenerator(payload).payloadDecimalStringRepresentation(output) == CHIP_NO_ERROR)
+            ESP_LOGI(tag, "Codigo de pareamento Matter: %s", code);
+    }
+
     CHIP_ERROR GetSetupDiscriminator(uint16_t &value) override { value = discriminator; return CHIP_NO_ERROR; }
     CHIP_ERROR SetSetupDiscriminator(uint16_t) override { return CHIP_ERROR_NOT_IMPLEMENTED; }
     CHIP_ERROR GetSetupPasscode(uint32_t &value) override { value = passcode; return CHIP_NO_ERROR; }
@@ -63,6 +74,7 @@ void synchronize(OperationSourceEnum source) {
 void publish(intptr_t) { synchronize(OperationSourceEnum::kUnspecified); }
 
 void event(const DeviceLayer::ChipDeviceEvent *event, intptr_t) {
+    if (event->Type == DeviceLayer::DeviceEventType::kCommissioningWindowOpened) pairing.printCode();
     if (event->Type == DeviceLayer::DeviceEventType::kCommissioningComplete)
         ESP_LOGI(tag, "Pareamento Matter concluido");
 }
@@ -87,6 +99,7 @@ void startMatter() {
         ESP_LOGE(tag, "Falha ao iniciar Matter");
         return;
     }
+    pairing.printCode();
     ready = true;
     reportMatter(false);
 }

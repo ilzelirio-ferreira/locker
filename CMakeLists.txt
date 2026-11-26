@@ -5,9 +5,10 @@ if(LOCKER_MATTER)
     if(NOT EXISTS "${ESP_MATTER_PATH}/components")
         message(FATAL_ERROR "Defina ESP_MATTER_PATH ou use -DLOCKER_MATTER=OFF")
     endif()
+    set(MATTER_SDK_PATH "${ESP_MATTER_PATH}/connectedhomeip/connectedhomeip")
     set(EXTRA_COMPONENT_DIRS
         "${ESP_MATTER_PATH}/components"
-        "${ESP_MATTER_PATH}/connectedhomeip/connectedhomeip/config/esp32/components")
+        "${MATTER_SDK_PATH}/config/esp32/components")
     set(SDKCONFIG_DEFAULTS "sdkconfig.defaults;sdkconfig.matter")
 endif()
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
