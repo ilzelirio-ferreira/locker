@@ -109,6 +109,10 @@ void reportMatter(bool) {
         ESP_LOGW(tag, "Falha ao agendar LockState");
 }
 
+void __attribute__((weak)) emberAfDoorLockClusterInitCallback(EndpointId endpoint) {
+    DoorLockServer::Instance().InitServer(endpoint);
+}
+
 bool emberAfPluginDoorLockOnDoorLockCommand(EndpointId endpoint, const DataModel::Nullable<FabricIndex> &,
                                            const DataModel::Nullable<NodeId> &, const Optional<ByteSpan> &,
                                            OperationErrorEnum &) {
