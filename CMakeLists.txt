@@ -17,3 +17,7 @@ if(NOT LOCKER_MATTER)
     idf_build_set_property(MINIMAL_BUILD ON)
 endif()
 project(locker)
+if(LOCKER_MATTER)
+    # ESP-Matter compiles Connected Home over IP sources in IDF components.
+    idf_build_set_property(CXX_COMPILE_OPTIONS "-DCHIP_HAVE_CONFIG_H" APPEND)
+endif()
