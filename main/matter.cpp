@@ -92,7 +92,7 @@ void startMatter() {
     esp_matter::endpoint::door_lock::config_t config{};
     config.door_lock.lock_state = static_cast<uint8_t>(DlLockState::kLocked);
     config.door_lock.actuator_enabled = true;
-    auto *endpoint = esp_matter::endpoint::door_lock::create(node, &config, ENDPOINT_FLAG_NONE, nullptr);
+    auto *endpoint = esp_matter::endpoint::door_lock::create(node, &config, esp_matter::ENDPOINT_FLAG_NONE, nullptr);
     if (!endpoint) return;
     endpointId = esp_matter::endpoint::get_id(endpoint);
     if (esp_matter::start(event) != ESP_OK) {
