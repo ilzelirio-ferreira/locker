@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 option(LOCKER_MATTER "Build with ESP-Matter" ON)
+# ESP-IDF discovers component requirements in a separate CMake process.
+set(ENV{LOCKER_BUILD_MATTER} "${LOCKER_MATTER}")
 if(LOCKER_MATTER)
     set(ESP_MATTER_PATH "$ENV{ESP_MATTER_PATH}")
     if(NOT EXISTS "${ESP_MATTER_PATH}/components")
