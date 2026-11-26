@@ -11,7 +11,7 @@ Controlador de fechadura para ESP32-2432S028 com display ILI9341, toque resistiv
 | GND | — | GND comum do AS608 e do driver |
 | Saída da fechadura | 26 | Entrada de driver ativo em HIGH, em nível lógico de 3,3 V |
 
-O AS608 usa UART a 57.600 baud, 8N1 e endereço padrão. Confirme a alimentação, a ordem dos terminais e os níveis UART da sua versão do sensor antes de ligar. Use conversão de nível se a saída do leitor exceder 3,3 V. Alimente o leitor conforme sua especificação e evite identificar fios apenas pela cor.
+O AS608 usa UART 8N1 e endereço padrão. O firmware tenta 57.600, 9.600, 19.200, 38.400 e 115.200 baud e usa a primeira velocidade que retorna uma resposta válida. Confirme a alimentação, a ordem dos terminais e os níveis UART da sua versão do sensor antes de ligar. Use conversão de nível se a saída do leitor exceder 3,3 V. Alimente o leitor conforme sua especificação e evite identificar fios apenas pela cor.
 
 O GPIO26 é compartilhado com o circuito do alto-falante em placas CYD comuns. Confirme acesso ao pino na sua revisão e deixe o alto-falante desconectado. Use um driver adequado à fechadura, com entrada mantida em LOW durante a partida, alimentação dimensionada para a carga e proteção contra retorno da bobina. Confira a lógica com a fechadura desconectada antes de energizar a carga. O firmware foi desenhado para uma fechadura que libera quando energizada e trava sem energia. O microSD fica fora deste projeto.
 

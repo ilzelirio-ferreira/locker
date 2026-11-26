@@ -287,6 +287,7 @@ void handleTouch(int x, int y) {
             newSlot = 1;
             while (newSlot <= slots && (enrolled & (1u << (newSlot - 1)))) ++newSlot;
             if (newSlot > slots) show(View::Settings, "MEMORIA CHEIA");
+            else if (!fingerprint.probe()) show(View::Settings, "LEITOR SEM RESPOSTA");
             else {
                 enrollmentUntil = esp_timer_get_time() + 30000000;
                 show(View::FirstFinger);
@@ -336,7 +337,7 @@ void scan() {
         if (view == View::RemoveFinger) show(View::RepeatFinger);
         return;
     }
-    if (status == As608::LinkError && enrollment()) {
+    if (status < 0 && enrollment()) {
         show(View::Settings, "LEITOR SEM RESPOSTA");
         return;
     }
@@ -382,6 +383,7 @@ extern "C" void app_main() {
     if (configured) load("fingers", &enrolled, sizeof(enrolled));
     fingerprint.begin();
     screen.begin();
+    fingerprint.probe();
     if (!load("touch-v2", &calibration, sizeof(calibration))) calibrate();
     show(configured ? View::Access : View::First);
 
