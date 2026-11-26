@@ -8,7 +8,12 @@
 #include <driver/gpio.h>
 #include <esp_random.h>
 #include <esp_timer.h>
+#include <esp_log.h>
+#if __has_include(<mbedtls/pkcs5.h>)
+#include <mbedtls/pkcs5.h>
+#else
 #include <psa/crypto.h>
+#endif
 #include <nvs.h>
 #include <nvs_flash.h>
 #include <freertos/FreeRTOS.h>
@@ -57,6 +62,11 @@ bool save(const char *name, const void *data, size_t size) {
 }
 
 bool hashPin(const char *value, const PinRecord &record, uint8_t *hash) {
+#if __has_include(<mbedtls/pkcs5.h>)
+    return mbedtls_pkcs5_pbkdf2_hmac_ext(MBEDTLS_MD_SHA256,
+        reinterpret_cast<const uint8_t *>(value), strlen(value), record.salt,
+        sizeof(record.salt), 20000, sizeof(record.hash), hash) == 0;
+#else
     psa_key_derivation_operation_t operation = PSA_KEY_DERIVATION_OPERATION_INIT;
     const bool ok = psa_crypto_init() == PSA_SUCCESS &&
         psa_key_derivation_setup(&operation, PSA_ALG_PBKDF2_HMAC(PSA_ALG_SHA_256)) == PSA_SUCCESS &&
@@ -68,12 +78,20 @@ bool hashPin(const char *value, const PinRecord &record, uint8_t *hash) {
         psa_key_derivation_output_bytes(&operation, hash, sizeof(record.hash)) == PSA_SUCCESS;
     psa_key_derivation_abort(&operation);
     return ok;
+#endif
 }
 
 bool savePin() {
     PinRecord next{};
     esp_fill_random(next.salt, sizeof(next.salt));
-    if (!hashPin(candidate, next, next.hash) || !save("pin", &next, sizeof(next))) return false;
+    if (!hashPin(candidate, next, next.hash)) {
+        ESP_LOGE("locker", "Falha na derivacao do PIN");
+        return false;
+    }
+    if (!save("pin", &next, sizeof(next))) {
+        ESP_LOGE("locker", "Falha ao persistir o PIN na NVS");
+        return false;
+    }
     pin = next;
     configured = true;
     return true;
