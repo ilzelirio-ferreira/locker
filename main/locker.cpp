@@ -8,7 +8,7 @@
 #include <driver/gpio.h>
 #include <esp_random.h>
 #include <esp_timer.h>
-#include <mbedtls/pkcs5.h>
+#include <psa/crypto.h>
 #include <nvs.h>
 #include <nvs_flash.h>
 #include <freertos/FreeRTOS.h>
@@ -57,8 +57,17 @@ bool save(const char *name, const void *data, size_t size) {
 }
 
 bool hashPin(const char *value, const PinRecord &record, uint8_t *hash) {
-    return mbedtls_pkcs5_pbkdf2_hmac_ext(MBEDTLS_MD_SHA256, reinterpret_cast<const uint8_t *>(value),
-        strlen(value), record.salt, sizeof(record.salt), 20000, sizeof(record.hash), hash) == 0;
+    psa_key_derivation_operation_t operation = PSA_KEY_DERIVATION_OPERATION_INIT;
+    const bool ok = psa_crypto_init() == PSA_SUCCESS &&
+        psa_key_derivation_setup(&operation, PSA_ALG_PBKDF2_HMAC(PSA_ALG_SHA_256)) == PSA_SUCCESS &&
+        psa_key_derivation_input_integer(&operation, PSA_KEY_DERIVATION_INPUT_COST, 20000) == PSA_SUCCESS &&
+        psa_key_derivation_input_bytes(&operation, PSA_KEY_DERIVATION_INPUT_SALT,
+            record.salt, sizeof(record.salt)) == PSA_SUCCESS &&
+        psa_key_derivation_input_bytes(&operation, PSA_KEY_DERIVATION_INPUT_PASSWORD,
+            reinterpret_cast<const uint8_t *>(value), strlen(value)) == PSA_SUCCESS &&
+        psa_key_derivation_output_bytes(&operation, hash, sizeof(record.hash)) == PSA_SUCCESS;
+    psa_key_derivation_abort(&operation);
+    return ok;
 }
 
 bool savePin() {

@@ -26,9 +26,9 @@ jobs:
         run: |
           docker run --rm -v "${{ github.workspace }}:/project" -w /project \
             -e IDF_TARGET=esp32 -e ESP_MATTER_PATH=/opt/espressif/esp-matter \
-            "${{ matrix.image }}" idf.py -B build-${{ matrix.variant }} \
+            "${{ matrix.image }}" bash -c "cd /project && idf.py -B build-${{ matrix.variant }} \
             -D SDKCONFIG=/project/build-${{ matrix.variant }}/sdkconfig \
-            -D LOCKER_MATTER=${{ matrix.matter }} build
+            -D LOCKER_MATTER=${{ matrix.matter }} build"
       - uses: actions/upload-artifact@v4
         with:
           name: locker-esp32-${{ matrix.variant }}
