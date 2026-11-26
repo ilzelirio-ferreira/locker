@@ -1,0 +1,41 @@
+name: Build Locker ESP32
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: matter
+            image: espressif/esp-matter:latest
+            matter: "ON"
+          - variant: local
+            image: espressif/idf:v6.0.2
+            matter: "OFF"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile firmware
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/project" -w /project \
+            -e IDF_TARGET=esp32 -e ESP_MATTER_PATH=/opt/espressif/esp-matter \
+            "${{ matrix.image }}" idf.py -B build-${{ matrix.variant }} \
+            -D SDKCONFIG=/project/build-${{ matrix.variant }}/sdkconfig \
+            -D LOCKER_MATTER=${{ matrix.matter }} build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: locker-esp32-${{ matrix.variant }}
+          path: |
+            build-${{ matrix.variant }}/locker.bin
+            build-${{ matrix.variant }}/bootloader/bootloader.bin
+            build-${{ matrix.variant }}/partition_table/partition-table.bin
+            build-${{ matrix.variant }}/flasher_args.json
+            build-${{ matrix.variant }}/flash_args
+          if-no-files-found: error

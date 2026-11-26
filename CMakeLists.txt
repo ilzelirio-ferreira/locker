@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.22)
+option(LOCKER_MATTER "Build with ESP-Matter" ON)
+if(LOCKER_MATTER)
+    set(ESP_MATTER_PATH "$ENV{ESP_MATTER_PATH}")
+    if(NOT EXISTS "${ESP_MATTER_PATH}/components")
+        message(FATAL_ERROR "Defina ESP_MATTER_PATH ou use -DLOCKER_MATTER=OFF")
+    endif()
+    set(EXTRA_COMPONENT_DIRS
+        "${ESP_MATTER_PATH}/components"
+        "${ESP_MATTER_PATH}/connectedhomeip/connectedhomeip/config/esp32/components")
+    set(SDKCONFIG_DEFAULTS "sdkconfig.defaults;sdkconfig.matter")
+endif()
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+set(PROJECT_VER 0.1.0)
+if(NOT LOCKER_MATTER)
+    idf_build_set_property(MINIMAL_BUILD ON)
+endif()
+project(locker)
